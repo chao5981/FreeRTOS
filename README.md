@@ -59,3 +59,4 @@
 <img width="791" height="422" alt="image" src="https://github.com/user-attachments/assets/be29aa5e-cf20-43d2-91bb-823728b3519d" />
 
 
+备注：任务优先级是数字越大，优先级越高。和中断相反。
