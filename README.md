@@ -252,4 +252,50 @@
     }
 
 
+  如果单独来看的话，看起来消息队列只能实现俩个任务之间的通讯，不能把所有的消息都塞到里面去
+
+  但其实是可以的，我们只需要稍微做一点手脚。
+
+  第一个办法就是目标标识：
+
+    typedef struct {
+    TaskHandle_t xDestination; // 目标任务句柄
+    void *pData;               // 实际数据
+    } TaggedMessage;
     
+    // 通用队列
+    QueueHandle_t xGlobalQueue = xQueueCreate(20, sizeof(TaggedMessage));
+    
+    // 接收任务检查消息
+    void vReceiverTask(void *pvParameters) {
+        TaggedMessage msg;
+        while(1) {
+            if(xQueueReceive(xGlobalQueue, &msg, portMAX_DELAY)) {
+                if(msg.xDestination == xTaskGetCurrentTaskHandle()) {
+                    // 处理专属消息
+                }
+                // 否则忽略或重新入列
+            }
+        }
+    }
+
+第二个办法为队列+信号量控制
+
+    QueueHandle_t xSharedQueue;
+    SemaphoreHandle_t xAccessSem;
+    
+    // 发送方
+    void vPrivilegedSender() {
+        xSemaphoreTake(xAccessSem, portMAX_DELAY);
+        xQueueSend(xSharedQueue, &data, 0);
+        xSemaphoreGive(xAccessSem);
+    }
+    
+    // 接收方
+    void vExclusiveReceiver() {
+        xSemaphoreTake(xAccessSem, portMAX_DELAY);
+        if(uxQueueMessagesWaiting(xSharedQueue) > 0) {
+            xQueueReceive(xSharedQueue, &data, 0);
+        }
+        xSemaphoreGive(xAccessSem);
+    }
