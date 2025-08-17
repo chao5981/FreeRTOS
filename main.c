@@ -6,39 +6,39 @@
  * @LastEditors: Please set LastEditors
  * @LastEditTime: 2025-08-15 11:25:37
  */
-#include "stm32f10x.h"   // Ïàµ±ÓÚ51µ¥Æ¬»úÖĞµÄ  #include <reg51.h>
+#include "stm32f10x.h"   // ç›¸å½“äº51å•ç‰‡æœºä¸­çš„  #include <reg51.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 
 #include "BSP.h"
 
-/* *************´´½¨ÈÎÎñ¾ä±ú************** */
+/* *************åˆ›å»ºä»»åŠ¡å¥æŸ„************** */
 TaskHandle_t App_Task_Create_Handle;
 TaskHandle_t USART_Printf_Task_Handle;
 TaskHandle_t Key_Scan_Task_Handle;
 TaskHandle_t LED_Task_Handle;
 
-/* **************ÄÚºË¶ÔÏó¾ä±ú*************** */
+/* **************å†…æ ¸å¯¹è±¡å¥æŸ„*************** */
 /*
- * ĞÅºÅÁ¿£¬ÏûÏ¢¶ÓÁĞ£¬ÊÂ¼ş±êÖ¾×é£¬Èí¼ş¶¨Ê±Æ÷ÕâĞ©¶¼ÊôÓÚÄÚºËµÄ¶ÔÏó£¬ÒªÏëÊ¹ÓÃÕâĞ©ÄÚºË
- * ¶ÔÏó£¬±ØĞëÏÈ´´½¨£¬´´½¨³É¹¦Ö®ºó»á·µ»ØÒ»¸öÏàÓ¦µÄ¾ä±ú¡£Êµ¼ÊÉÏ¾ÍÊÇÒ»¸öÖ¸Õë£¬ºóĞøÎÒ
- * ÃÇ¾Í¿ÉÒÔÍ¨¹ıÕâ¸ö¾ä±ú²Ù×÷ÕâĞ©ÄÚºË¶ÔÏó¡£
+ * ä¿¡å·é‡ï¼Œæ¶ˆæ¯é˜Ÿåˆ—ï¼Œäº‹ä»¶æ ‡å¿—ç»„ï¼Œè½¯ä»¶å®šæ—¶å™¨è¿™äº›éƒ½å±äºå†…æ ¸çš„å¯¹è±¡ï¼Œè¦æƒ³ä½¿ç”¨è¿™äº›å†…æ ¸
+ * å¯¹è±¡ï¼Œå¿…é¡»å…ˆåˆ›å»ºï¼Œåˆ›å»ºæˆåŠŸä¹‹åä¼šè¿”å›ä¸€ä¸ªç›¸åº”çš„å¥æŸ„ã€‚å®é™…ä¸Šå°±æ˜¯ä¸€ä¸ªæŒ‡é’ˆï¼Œåç»­æˆ‘
+ * ä»¬å°±å¯ä»¥é€šè¿‡è¿™ä¸ªå¥æŸ„æ“ä½œè¿™äº›å†…æ ¸å¯¹è±¡ã€‚
  *
- * ÄÚºË¶ÔÏóËµ°×ÁË¾ÍÊÇÒ»ÖÖÈ«¾ÖµÄÊı¾İ½á¹¹£¬Í¨¹ıÕâĞ©Êı¾İ½á¹¹ÎÒÃÇ¿ÉÒÔÊµÏÖÈÎÎñ¼äµÄÍ¨ĞÅ£¬
- * ÈÎÎñ¼äµÄÊÂ¼şÍ¬²½µÈ¸÷ÖÖ¹¦ÄÜ¡£ÖÁÓÚÕâĞ©¹¦ÄÜµÄÊµÏÖÎÒÃÇÊÇÍ¨¹ıµ÷ÓÃÕâĞ©ÄÚºË¶ÔÏóµÄº¯Êı
- * À´Íê³ÉµÄ
+ * å†…æ ¸å¯¹è±¡è¯´ç™½äº†å°±æ˜¯ä¸€ç§å…¨å±€çš„æ•°æ®ç»“æ„ï¼Œé€šè¿‡è¿™äº›æ•°æ®ç»“æ„æˆ‘ä»¬å¯ä»¥å®ç°ä»»åŠ¡é—´çš„é€šä¿¡ï¼Œ
+ * ä»»åŠ¡é—´çš„äº‹ä»¶åŒæ­¥ç­‰å„ç§åŠŸèƒ½ã€‚è‡³äºè¿™äº›åŠŸèƒ½çš„å®ç°æˆ‘ä»¬æ˜¯é€šè¿‡è°ƒç”¨è¿™äº›å†…æ ¸å¯¹è±¡çš„å‡½æ•°
+ * æ¥å®Œæˆçš„
  * 
  */
 
 QueueHandle_t Test_Queue_Handle=NULL;
 
 
-/* ************¶ÓÁĞÏà¹ØµÄºê¶¨Òå************** */
+/* ************é˜Ÿåˆ—ç›¸å…³çš„å®å®šä¹‰************** */
 #define Test_Queue_Length    4
 #define Test_Queue_Size 	 sizeof(uint8_t)
 
-/* **************ÈÎÎñ´´½¨º¯Êı***************** */
+/* **************ä»»åŠ¡åˆ›å»ºå‡½æ•°***************** */
 static void App_Task_Create(void);
 static void USART_Printf_Task(void);
 static void Key_Scan_Task(void);
@@ -63,9 +63,9 @@ int main(void)
 
 
 /**
- * @brief ´´½¨ÈÎÎñº¯Êı
- * @param ÎŞ
- * @retval ÎŞ
+ * @brief åˆ›å»ºä»»åŠ¡å‡½æ•°
+ * @param æ— 
+ * @retval æ— 
  */
 static void App_Task_Create(void)
 {
@@ -100,9 +100,9 @@ static void App_Task_Create(void)
 
 
 /**
- * @brief °´¼üÉ¨ÃèÈÎÎñº¯Êı
- * @param ÎŞ
- * @retval ÎŞ
+ * @brief æŒ‰é”®æ‰«æä»»åŠ¡å‡½æ•°
+ * @param æ— 
+ * @retval æ— 
  */
 static void Key_Scan_Task(void)
 {
@@ -135,9 +135,9 @@ static void Key_Scan_Task(void)
 
 
 /**
- * @brief LEDµÆÈÎÎñ
- * @param ÎŞ
- * @retval ÎŞ
+ * @brief LEDç¯ä»»åŠ¡
+ * @param æ— 
+ * @retval æ— 
  */
 static void LED_Task(void)
 {
@@ -145,7 +145,7 @@ static void LED_Task(void)
 	uint32_t Queue_Massage=0;
 	while (1)
 	{
-		xReturn=xQueuePeek(Test_Queue_Handle,&Queue_Massage,0);
+		xReturn=xQueuePeek(Test_Queue_Handle,&Queue_Massage,portMAX_DELAY);
 		if(xReturn==pdTRUE)
 		{
 			if(Queue_Massage==1)
@@ -169,9 +169,9 @@ static void LED_Task(void)
 
 
 /**
- * @brief ´®¿Ú´òÓ¡Êı¾İº¯Êı
- * @param ÎŞ
- * @retval ÎŞ
+ * @brief ä¸²å£æ‰“å°æ•°æ®å‡½æ•°
+ * @param æ— 
+ * @retval æ— 
  */
 static void USART_Printf_Task(void)
 {
@@ -187,4 +187,5 @@ static void USART_Printf_Task(void)
 		vTaskDelay(10);
 	}
 }
+
 
