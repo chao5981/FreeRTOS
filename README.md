@@ -35,3 +35,41 @@
 
 下面介绍互斥量相关函数：
 
+ 1.创建互斥信号量：SemaphoreHandle_t xSemaphoreCreateMutex(void);
+
+      返回值：成功获取返回 pdTRUE，超时返回 pdFALSE。
+
+ 2.释放信号量:BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore);(适用于二值信号量，计数信号量，互斥信号量，不适用于递归信号量)
+
+    xSemaphore:二值信号量的句柄
+    
+    返回值：成功获取返回 pdTRUE，超时返回 pdFALSE。
+
+  3.获取信号量:BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore, TickType_t xTicksToWait);(适用于二值信号量，计数信号量，互斥信号量，不适用于递归信号量)
+
+    xSemaphore:二值信号量的句柄
+    xTicksToWait：等待时间（单位：Tick），portMAX_DELAY 表示无限等待。
+    
+    返回值：成功获取返回 pdTRUE，超时返回 pdFALSE。
+
+  4.创建递归互斥信号量:SemaphoreHandle_t xSemaphoreCreateRecursiveMutex(void);要想使用该函数必须在头文件 FreeRTOSConfig.h 
+中把宏 configUSE_RECURSIVE_MUTEXES 定义为 1。
+
+    如果创建成功则返回一个递归互斥量句柄，用于访问创建的递归互斥量。如果创建不成功则返回 NULL。
+
+  5.递归信号量释放信号量：xSemaphoreGiveRecursive(xRecursiveMutex);要想使用该函数必须在
+头文件 FreeRTOSConfig.h 把宏 configUSE_RECURSIVE_MUTEXES 定义为 1。
+
+    xRecursiveMutex:递归互斥信号量的句柄
+
+  6.递归信号量获取信号量：xSemaphoreTakeRecursive(xMutex, xBlockTime); 要想使用该函数必须在头文件 FreeRTOSConfig.h 
+中把宏 configUSE_RECURSIVE_MUTEXES 定义为 1
+
+    xMutex:递归互斥信号量的句柄
+    xBlockTime：等待时间（单位：Tick），portMAX_DELAY 表示无限等待。
+    
+    获取成功则返回 pdTRUE，在超时之前没有获取成功则返回 errQUEUE_EMPTY
+
+  7.互斥量删除函数 vSemaphoreDelete(xSemaphore)
+
+    xSemaphore 信号量句柄。
