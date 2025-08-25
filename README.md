@@ -97,6 +97,50 @@
   使用示例:
   <img width="786" height="675" alt="image" src="https://github.com/user-attachments/assets/e5c65a8d-5be6-4d7c-a1a7-3ad323433bfa" />
 
-  4.
-
+  4.停止定时器：BaseType_t xTimerStop( TimerHandle_t xTimer, TickType_t xTicksToWait )
   
+    参数和返回值：与 xTimerStart() 完全相同
+
+  5.停止定时器的中断版本:BaseType_t xTimerStopFromISR(TimerHandle_t xTimer,BaseType_t *pxHigherPriorityTaskWoken)
+
+    参数和返回值：与 xTimerStartFromISR() 完全相同
+
+  6.重置定时器：BaseType_t xTimerReset( TimerHandle_t xTimer, TickType_t xTicksToWait )
+
+     参数和返回值：与 xTimerStart() 完全相同
+
+  备注:重置一个定时器。如果定时器正在运行，它会从调用此函数的时刻重新开始计时；如果定时器处于休眠态，则效果等同于 xTimerStart()。用于软件看门狗或超时检测。在主循环中定期“喂狗”，即重置定时器，防止其超时。
+
+  7.查询定时器状态：BaseType_t xTimerIsTimerActive( TimerHandle_t xTimer )
+
+    参数：xTimer，要查询的定时器句柄。
+
+    返回值：
+
+    pdFALSE: 定时器处于休眠态（未运行）。
+    非零值 (pdTRUE)：定时器处于运行态（正在计时）。
+
+  8.修改定时器周期：BaseType_t xTimerChangePeriod( TimerHandle_t xTimer,TickType_t xNewPeriod,TickType_t xTicksToWait )
+
+    参数：
+
+    xTimer: 要修改的定时器句柄。
+    
+    xNewPeriod: 新的周期值（单位: ticks）。
+    
+    xTicksToWait: 命令发送超时时间。
+    
+    返回值：与 xTimerStart() 相同。
+
+
+  9.软件定时器删除函数:xTimerDelete( xTimer, xTicksToWait )
+
+    参数:
+    
+    xTimer: 软件定时器句柄。
+    xBlockTime :用户指定的超时时间，单位为系统节拍周期(即 tick)，如果在 FreeRTOS调度器开启之前调用 xTimerStart()，该形参将不起作用。
+
+    返回值:
+    如果删除命令在超时时间之前无法成功地发送到定时器命令队列则返回 pdFAILE，成功发送则返回 pdPASS。
+
+    
